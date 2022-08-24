@@ -10,6 +10,7 @@
     <script type="text/javascript">
         $(document).ready(() => {
             var connection = new signalR.HubConnectionBuilder()
+                .configureLogging(signalR.LogLevel.Debug)
                 .withUrl("https://localhost:5000/MyHub")
                 .build();
             
