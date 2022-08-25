@@ -15,31 +15,41 @@
                 .withUrl("https://localhost:5000/MyHub")
                 .build();
 
-            $("#conStatus").text(connection.connectionState);
-            
-            connection.start()
-                .then(() => {
+            //functions
+            function statusShow() {
                 $("#conStatus").text(connection.connectionState);
-                $("#loading").hide();
-            })
-                .catch((err) => { console.log(err) });
-            
-            $("#conStatus").text(connection.connectionState);
+            }
+
+            function start() {
+                connection.start()
+                    .then(() => {
+                        statusShow();
+                        $("#loading").hide();
+                    })
+                    .catch((err) => {
+                         console.log(err)
+                        setTimeout(() => start(), 2000);
+                    });
+            }
+
+            statusShow();
+            start();
             
             //events
             connection.onreconnecting(err => {
                 $("#loading").show();
-                $("#conStatus").text(connection.connectionState);
+                statusShow();
                 console.log("onreconnection:" + err);
             });
             connection.onreconnected(connectionId => {
                 $("#loading").hide();
-                $("#conStatus").text(connection.connectionState);
+                statusShow();
                 console.log("connectionId:" + connectionId)
             })
             connection.onclose(() => {
                 $("#loading").hide();
-                $("#conStatus").text(connection.connectionState);
+                statusShow();
+                start();
             })
             
             //clicks
