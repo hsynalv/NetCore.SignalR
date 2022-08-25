@@ -87,5 +87,10 @@ namespace NetCore.SignalR.API.Hubs
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, teamName);
         }
+
+        public async Task SendProduct(Product product)
+        {
+           await  Clients.All.SendAsync("ReceiveProduct", product);
+        }
     }
 }

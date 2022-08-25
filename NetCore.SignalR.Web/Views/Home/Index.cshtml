@@ -100,6 +100,10 @@
                 })
             })
 
+            connection.on("ReceiveProduct", product => {
+                console.log(product)
+            })
+
             //clicks
             $("#btnNameSave").click(() => {
                     connection.invoke("SendName", $("#txtName").val())
@@ -129,6 +133,12 @@
                     connection.invoke("LeftToGroup", "Team A");
                 }
             })
+
+            $("#btnProduct").click(() => {
+                let product = { "Id": 1, "Name": "Kalem", "Price": "100", "Stock":200 }
+
+                connection.invoke("SendProduct", product);
+            })
         })
     </script>
 
@@ -140,6 +150,9 @@
         <hr />
         <button class="btn btn-primary" id="btnNameSave">İsim Kaydet</button>
         <button class="btn btn-warning" id="btnNameTeam">İsim Kaydet(Takım)</button>
+        
+        <button class="btn btn-dark" id="btnProduct">Ürün Gönder</button>
+
         <div class="alert alert-info mt-2">
             <div class="float-start">
                 <div>
