@@ -35,7 +35,7 @@
             statusShow();
             start();
             
-            //events
+            //Subscribes
             connection.onreconnecting(err => {
                 $("#loading").show();
                 statusShow();
@@ -50,6 +50,10 @@
                 $("#loading").hide();
                 statusShow();
                 start();
+            })
+
+            connection.on("ReceiveClientCount",(clientCount) => {
+                $("#clientCount").text(clientCount);
             })
             
             //clicks
@@ -76,7 +80,10 @@
         <button class="btn btn-primary" id="btnNameSave">İsim Kaydet</button>
         <div class="alert alert-info">
             <div class="float-start">
-                Bağlantı Durumu:<strong id="conStatus"></strong>
+                <div>
+                    Bağlantı Durumu:<strong id="conStatus"></strong>
+                    Client Sayısı:<strong id="clientCount"></strong>
+                </div>
             </div>
             <div id="loading" class="float-end">
                 <span class="sr-only">Loading...</span>
