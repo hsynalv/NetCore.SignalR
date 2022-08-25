@@ -72,18 +72,15 @@ namespace NetCore.SignalR.API.Hubs
 
             await _context.SaveChangesAsync();
 
-            await Clients.Groups(teamName).SendAsync("ReceiveMessageByGroup",Names,teamName);
+            await Clients.Groups(teamName).SendAsync("ReceiveNameByGroup",name,team.Id);
         }
 
         public async Task GetNamesByGroup()
         {
-            var teams = _context.Teams.Include(x => x.Users).Select(x => new
-            {
-                teamName = x.Name,
-                Users = x.Users.ToList()
-            });
+            var teams = _context.Teams.Include(team => team.Users).ToList();
 
-            await Clients.All.SendAsync("ReceiveNamesByGroup", teams);
+
+            await Clients.All.SendAsync("ReceiveAllNamesByGroup", teams);
         }
 
         public async Task LeftToGroup(string teamName)

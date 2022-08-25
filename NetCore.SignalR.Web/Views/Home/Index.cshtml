@@ -26,7 +26,8 @@
                         statusShow();
                         $("#loading").hide();
 
-                        connection.invoke("GetNames");
+                        //connection.invoke("GetNames");
+                        connection.invoke("GetNamesByGroup");
                     })
                     .catch((err) => {
                         console.log(err)
@@ -55,39 +56,79 @@
                 start();
             })
 
-            connection.on("ReceiveClientCount",
-                (clientCount) => {
+            connection.on("ReceiveClientCount", (clientCount) => {
                     $("#clientCount").text(clientCount);
                 })
 
-            connection.on("Notify",
-                (countText) => {
+            connection.on("Notify", (countText) => {
                     $("#notify").html(`<div class="alert alert-success">${countText}</div> `);
                 })
 
-            connection.on("ReceiveNames",
-                (names) => {
+            connection.on("ReceiveNames",(names) => {
                     $("#namesList").html(`<li class="list-group-item">${names}</li> `);
-                }
-            )
+                })
 
             connection.on("Error",(errorText) => {
                 alert(errorText);
             })
 
+            connection.on("ReceiveName", (name) => {
+                $("#namesList").append(`<li class="list-group-item"> ${name}</li>`)
+            })
+
+            connection.on("ReceiveNameByGroup",(name, teamId) => {
+                let listName;
+                if (teamId == 1)
+                    listName = "ATeamList";
+                else
+                    listName = "BTeamList";
+                $(`#${listName}`).append(`<li class="list-group-item">${name} </li>`)
+            })
+
+            connection.on("ReceiveAllNamesByGroup", teams => {
+                console.log(teams)
+                teams.forEach((team, index) => {
+                    let listName;
+                    if (team.Id == 1)
+                        listName = "ATeamList";
+                    else
+                        listName = "BTeamList";
+
+                    team.users.forEach((user, index2) => {
+                        $(`#${listName}`).append(`<li class="list-group-item">${user.name} </li>`)
+                    })
+                })
+            })
+
             //clicks
-            $("#btnNameSave")
-                .click(() => {
+            $("#btnNameSave").click(() => {
                     connection.invoke("SendName", $("#txtName").val())
                         .catch((err) => console.log(err))
                 })
 
-            // on methods
-            connection
-                .on("ReceiveName",
-                    (name) => {
-                        $("#namesList").append(`<li class="list-group-item"> ${name}</li>`)
-                    })
+            $("#btnNameTeam").click(() => {
+                let name = $("#txtName").val();
+                let teamName = $("input[type=radio]:checked").val();
+
+                if (teamName == null) {
+                    alert("Takım seçiniz");
+                    return;
+                }
+
+                connection.invoke("SendNameByGroup", name, teamName).catch(err => console.log(err));
+            })
+           
+            $("input[type=radio]").change(() => {
+                let value = $("input[type=radio]:checked").val();
+                if (value == "Team A") {
+                    connection.invoke("AddToGroup", value);
+                    connection.invoke("LeftToGroup", "Team B");
+                }
+                else {
+                    connection.invoke("AddToGroup", value);
+                    connection.invoke("LeftToGroup", "Team A");
+                }
+            })
         })
     </script>
 
@@ -98,7 +139,8 @@
         <input class="form-control" type="text" id="txtName" />
         <hr />
         <button class="btn btn-primary" id="btnNameSave">İsim Kaydet</button>
-        <div class="alert alert-info">
+        <button class="btn btn-warning" id="btnNameTeam">İsim Kaydet(Takım)</button>
+        <div class="alert alert-info mt-2">
             <div class="float-start">
                 <div>
                     Bağlantı Durumu:<strong id="conStatus"></strong>
@@ -111,11 +153,33 @@
             </div>
             <div class="clearfix"></div>
         </div>
-        <div id="notify">
-            <div></div>
+        <div id="notify"></div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="TeamGroup" value="Team A" />
+            <label class="form-check-label">A Takımı</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="TeamGroup" value="Team B" />
+            <label class="form-check-label">B Takımı</label>
         </div>
     </div>
     <div class="col-md-8 offset-2">
-        <ul class="list-group" id="namesList"></ul>
+        <div class="row">
+
+            <div class="col-md-6">
+                <h2>A Takımı</h2>
+                <ul class="list-group" id="ATeamList"></ul>
+            </div>
+            <div class="col-md-6">
+                <h2>B Takımı</h2>
+                <ul class="list-group" id="BTeamList"></ul>
+            </div>
+        </div>
     </div>
 </div> 
