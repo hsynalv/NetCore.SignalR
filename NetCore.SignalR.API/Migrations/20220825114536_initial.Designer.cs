@@ -11,7 +11,7 @@ using NetCore.SignalR.API.Models;
 namespace NetCore.SignalR.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220825113843_initial")]
+    [Migration("20220825114536_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,8 +31,9 @@ namespace NetCore.SignalR.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("Name")
-                        .HasColumnType("int");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
