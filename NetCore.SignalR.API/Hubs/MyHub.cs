@@ -1,13 +1,22 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using NetCore.SignalR.API.Models;
 
 namespace NetCore.SignalR.API.Hubs
 {
     public class MyHub : Hub
     {
+
         private static List<string> Names { get; set; } = new();
         private static int ClientCount { get; set; } = 0;
-
         public static int TeamCount { get; set; } = 7;
+
+        private readonly AppDbContext _context;
+
+        public MyHub(AppDbContext context)
+        {
+            _context = context;
+        }
         
         public async Task SendName(string name)
         {
@@ -38,6 +47,48 @@ namespace NetCore.SignalR.API.Hubs
             ClientCount--;
             await Clients.All.SendAsync("ReceiveClientCount", ClientCount);
             await base.OnDisconnectedAsync(exception);
+        }
+
+        //Groups
+
+        public async Task AddToGroup(string teamName)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, teamName);
+        }
+
+        public async Task SendNameByGroup(string name, string teamName)
+        {
+            var team = _context.Teams.Where(x => x.Name == teamName).FirstOrDefault();
+            if (team != null)
+            {
+                team.Users.Add(new User{Name = name});
+            }
+            else
+            {
+                var newTeam = new Team() { Name = teamName };
+                newTeam.Users.Add(new User{Name = name});
+                _context.Teams.Add(newTeam);
+            }
+
+            await _context.SaveChangesAsync();
+
+            await Clients.Groups(teamName).SendAsync("ReceiveMessageByGroup",Names,teamName);
+        }
+
+        public async Task GetNamesByGroup()
+        {
+            var teams = _context.Teams.Include(x => x.Users).Select(x => new
+            {
+                teamName = x.Name,
+                Users = x.Users.ToList()
+            });
+
+            await Clients.All.SendAsync("ReceiveNamesByGroup", teams);
+        }
+
+        public async Task LeftToGroup(string teamName)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, teamName);
         }
     }
 }
