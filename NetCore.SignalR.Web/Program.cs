@@ -1,4 +1,9 @@
+using NetCore.SignalR.Web.Hubs;
+
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddSignalR();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -19,7 +24,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
-
+app.MapHub<MySecondHub>("/MySecondHub");
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
